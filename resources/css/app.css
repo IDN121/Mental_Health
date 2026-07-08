@@ -1,0 +1,330 @@
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Poppins',sans-serif;
+}
+
+:root{
+    --primary:#2563EB;
+    --primary-dark:#1E40AF;
+    --success:#10B981;
+    --danger:#EF4444;
+    --warning:#F59E0B;
+    --bg:#eef3fb;
+    --glass:rgba(255,255,255,.72);
+}
+
+body{
+    background:
+        radial-gradient(circle at top left,#dbeafe 0%,transparent 40%),
+        radial-gradient(circle at bottom right,#bfdbfe 0%,transparent 35%),
+        var(--bg);
+
+    min-height:100vh;
+    color:#1e293b;
+    overflow-x:hidden;
+}
+
+a{
+    text-decoration:none;
+}
+
+/*=====================
+LOGIN
+=====================*/
+
+.auth-wrapper{
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:30px;
+    background:linear-gradient(135deg,#2563EB,#60A5FA);
+}
+
+.login-card{
+    border:none;
+    border-radius:28px;
+    overflow:hidden;
+    background:#fff;
+    box-shadow:0 25px 60px rgba(0,0,0,.15);
+}
+
+.left-side{
+    background:linear-gradient(180deg,#2563EB,#1D4ED8);
+    color:white;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    flex-direction:column;
+    text-align:center;
+    padding:60px 45px;
+}
+
+.left-side i{
+    font-size:85px;
+    margin-bottom:20px;
+}
+
+.right-side{
+    background:white;
+    padding:55px;
+}
+
+.input-group-text{
+    border-radius:14px 0 0 14px;
+    background:white;
+    border-right:none;
+}
+
+.form-control{
+    border-left:none;
+    border-radius:0 14px 14px 0;
+    box-shadow:none!important;
+}
+
+.btn-login{
+    height:52px;
+    border-radius:14px;
+    font-weight:600;
+}
+
+.btn-login:hover{
+    transform:translateY(-2px);
+}
+
+/*=====================
+SIDEBAR
+=====================*/
+
+.sidebar{
+    position:fixed;
+    left:20px;
+    top:20px;
+    bottom:20px;
+    width:270px;
+
+    display:flex;
+    flex-direction:column;
+
+    background:linear-gradient(180deg,#3b82f6,#2563eb);
+
+    border-radius:28px;
+
+    padding:30px;
+
+    color:white;
+
+    box-shadow:0 20px 40px rgba(37,99,235,.25);
+
+    z-index:1000;
+}
+
+.sidebar-logo{
+    text-align:center;
+    margin-bottom:40px;
+}
+
+.sidebar-logo i{
+    font-size:60px;
+}
+
+.sidebar-logo h4{
+    margin-top:15px;
+    font-weight:700;
+    font-size:20px;
+    color:white;
+}
+
+.sidebar-logo small{
+    color:rgba(255,255,255,.7);
+}
+
+.sidebar ul{
+    list-style:none;
+    padding:0;
+    margin:0;
+}
+
+.sidebar li{
+    margin-bottom:10px;
+}
+
+.sidebar a{
+    display:flex;
+    align-items:center;
+    gap:12px;
+
+    color:white;
+
+    padding:14px 16px;
+
+    border-radius:15px;
+
+    transition:.3s;
+
+    font-weight:500;
+}
+
+.sidebar a:hover{
+    background:rgba(255,255,255,.12);
+    color:white;
+}
+
+.active-menu{
+    background:rgba(255,255,255,.18);
+}
+
+.sidebar .badge{
+    margin-left:auto;
+}
+
+.sidebar hr{
+    border-color:rgba(255,255,255,.2);
+}
+
+/*=====================
+CONTENT
+=====================*/
+
+.main-content{
+    margin-left:310px;
+    padding:25px;
+    min-height:100vh;
+}
+
+/*=====================
+NAVBAR
+=====================*/
+
+.navbar-custom{
+    background:rgba(255,255,255,.8);
+
+    backdrop-filter:blur(18px);
+
+    border-radius:22px;
+
+    padding:18px 28px;
+
+    border:1px solid rgba(255,255,255,.5);
+
+    box-shadow:0 10px 30px rgba(0,0,0,.08);
+
+    margin-bottom:25px;
+}
+
+/*=====================
+CARD
+=====================*/
+
+.card-modern{
+    border:none;
+
+    border-radius:22px;
+
+    background:white;
+
+    box-shadow:0 15px 35px rgba(0,0,0,.08);
+}
+
+.stat-icon{
+    width:65px;
+    height:65px;
+    border-radius:18px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    color:white;
+    font-size:28px;
+}
+
+.bg-blue{
+    background:#2563EB;
+}
+
+.bg-green{
+    background:#10B981;
+}
+
+.bg-orange{
+    background:#F59E0B;
+}
+
+.bg-red{
+    background:#EF4444;
+}
+
+/*=====================
+BUTTON
+=====================*/
+
+.btn{
+    border-radius:12px;
+}
+
+/*=====================
+TABLE
+=====================*/
+
+.table{
+    vertical-align:middle;
+}
+
+.table thead{
+    background:#eff6ff;
+}
+
+.table th{
+    font-weight:600;
+}
+
+/*=====================
+FOOTER
+=====================*/
+
+footer{
+    margin-top:30px;
+    text-align:center;
+    color:#94a3b8;
+}
+
+/*=====================
+SCROLLBAR
+=====================*/
+
+::-webkit-scrollbar{
+    width:8px;
+}
+
+::-webkit-scrollbar-thumb{
+    background:#94a3b8;
+    border-radius:20px;
+}
+
+/*=====================
+RESPONSIVE
+=====================*/
+
+@media(max-width:992px){
+
+    .sidebar{
+        display:none;
+    }
+
+    .main-content{
+        margin-left:0;
+        padding:15px;
+    }
+
+    .left-side{
+        display:none;
+    }
+
+    .right-side{
+        padding:35px;
+    }
+
+}
