@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title','AI Monitoring & Mood Graph')
+@section('title','Monitoring AI')
 @section('page-title','Monitoring AI')
 
 @section('content')
@@ -12,25 +12,96 @@
 
     <div class="row mb-4">
         <div class="col-12">
-            <h4 class="fw-bold mb-3">Grafik Pemantauan Mental Health Karyawan</h4>
-            <p class="text-muted">Visualisasi berbasis AI untuk memantau tren mood harian dan komposisi emosi keseluruhan.</p>
+            <h4 class="fw-bold mb-3">Monitoring Deteksi Emosi AI</h4>
+            <p class="text-muted">Daftar pesan chat dari karyawan beserta hasil deteksi emosi otomatis oleh Artificial Intelligence.</p>
         </div>
     </div>
 
-    <div class="row">
-        <!-- Grafik Tren Mood Harian -->
-        <div class="col-lg-8 mb-4">
-            <div class="card card-modern p-4 h-100">
-                <h5 class="fw-bold mb-4">Tren Mood (7 Hari Terakhir)</h5>
-                <canvas id="moodLineChart" height="100"></canvas>
-            </div>
-        </div>
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card card-modern p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="fw-bold mb-0">Riwayat Deteksi</h5>
+                    
+                    <!-- Filter -->
+                    <form action="/admin/monitoring" method="GET" class="d-flex align-items-center">
+                        <label class="me-2 text-muted small">Filter Emosi:</label>
+                        <select name="emotion" class="form-select form-select-sm w-auto" onchange="this.form.submit()">
+                            <option value="">Semua Emosi</option>
+                            <option value="happy" {{ request('emotion') == 'happy' ? 'selected' : '' }}>Senang (Happy)</option>
+                            <option value="sad" {{ request('emotion') == 'sad' ? 'selected' : '' }}>Sedih (Sad)</option>
+                            <option value="stress" {{ request('emotion') == 'stress' ? 'selected' : '' }}>Stress/Marah/Cemas</option>
+                            <option value="neutral" {{ request('emotion') == 'neutral' ? 'selected' : '' }}>Netral</option>
+                        </select>
+                    </form>
+                </div>
 
-        <!-- Grafik Distribusi Mood -->
-        <div class="col-lg-4 mb-4">
-            <div class="card card-modern p-4 h-100">
-                <h5 class="fw-bold mb-4">Distribusi Mood Keseluruhan</h5>
-                <canvas id="moodDoughnutChart" height="200"></canvas>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th>Karyawan</th>
+                                <th>Waktu</th>
+                                <th>Isi Pesan</th>
+                                <th>Emosi Terdeteksi</th>
+                                <th>Confidence</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($messages as $msg)
+                            <tr>
+                                <td class="fw-semibold text-primary">
+                                    {{ $msg->anonymousUser->unique_code ?? 'Unknown' }}
+                                </td>
+                                <td class="text-muted small">
+                                    {{ $msg->created_at->format('d M Y, H:i') }}
+                                </td>
+                                <td>
+                                    <div class="text-truncate" style="max-width: 250px;" title="{{ $msg->message }}">
+                                        {{ $msg->message }}
+                                    </div>
+                                </td>
+                                <td>
+                                    @if(strtolower($msg->emotion) == 'happy' || strtolower($msg->emotion) == 'senang')
+                                        <span class="badge bg-success rounded-pill px-3">Happy</span>
+                                    @elseif(strtolower($msg->emotion) == 'sad' || strtolower($msg->emotion) == 'sedih')
+                                        <span class="badge bg-primary rounded-pill px-3">Sad</span>
+                                    @elseif(strtolower($msg->emotion) == 'stress' || strtolower($msg->emotion) == 'marah' || strtolower($msg->emotion) == 'cemas' || strtolower($msg->emotion) == 'takut')
+                                        <span class="badge bg-danger rounded-pill px-3">Stress</span>
+                                    @else
+                                        <span class="badge bg-secondary rounded-pill px-3">Neutral</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="progress flex-grow-1 me-2" style="height: 6px;">
+                                            <div class="progress-bar {{ $msg->confidence >= 80 ? 'bg-success' : ($msg->confidence >= 50 ? 'bg-warning' : 'bg-danger') }}" 
+                                                 role="progressbar" 
+                                                 style="width: {{ $msg->confidence }}%" 
+                                                 aria-valuenow="{{ $msg->confidence }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                        </div>
+                                        <small class="fw-bold">{{ $msg->confidence }}%</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <a href="/admin/chat/{{ $msg->anonymous_user_id }}" class="btn btn-sm btn-outline-primary rounded-pill">
+                                        <i class="bi bi-chat-dots me-1"></i> Balas
+                                    </a>
+                                </td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="6" class="text-center py-4 text-muted">Belum ada riwayat pesan dari karyawan.</td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="d-flex justify-content-center mt-3">
+                    {{ $messages->appends(request()->query())->links('pagination::bootstrap-5') }}
+                </div>
             </div>
         </div>
     </div>
@@ -38,89 +109,3 @@
     @include('components.footer')
 </div>
 @endsection
-
-@push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        
-        // Data for Line Chart
-        const dates = {!! json_encode($dates) !!};
-        const countsByDate = {!! json_encode($countsByDate) !!};
-
-        const ctxLine = document.getElementById('moodLineChart').getContext('2d');
-        new Chart(ctxLine, {
-            type: 'line',
-            data: {
-                labels: dates,
-                datasets: [{
-                    label: 'Jumlah Entri Mood',
-                    data: countsByDate,
-                    borderColor: '#2563EB',
-                    backgroundColor: 'rgba(37, 99, 235, 0.2)',
-                    borderWidth: 2,
-                    tension: 0.3,
-                    fill: true
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        position: 'top',
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            stepSize: 1
-                        }
-                    }
-                }
-            }
-        });
-
-        // Data for Doughnut Chart
-        const moodDistribution = {!! json_encode($moodDistribution) !!};
-        
-        const labels = ['Senang', 'Sedih', 'Marah', 'Cemas', 'Netral'];
-        const dataDoughnut = [
-            moodDistribution['Senang'] || 0,
-            moodDistribution['Sedih'] || 0,
-            moodDistribution['Marah'] || 0,
-            moodDistribution['Cemas'] || 0,
-            moodDistribution['Netral'] || 0
-        ];
-
-        const ctxDoughnut = document.getElementById('moodDoughnutChart').getContext('2d');
-        new Chart(ctxDoughnut, {
-            type: 'doughnut',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Distribusi Mood',
-                    data: dataDoughnut,
-                    backgroundColor: [
-                        '#10B981', // Senang (Green)
-                        '#3B82F6', // Sedih (Blue)
-                        '#EF4444', // Marah (Red)
-                        '#F59E0B', // Cemas (Yellow/Orange)
-                        '#9CA3AF'  // Netral (Gray)
-                    ],
-                    hoverOffset: 4
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                    }
-                }
-            }
-        });
-
-    });
-</script>
-@endpush

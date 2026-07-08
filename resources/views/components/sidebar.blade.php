@@ -45,43 +45,25 @@
         </li>
 
         <li>
-
-            <a href="#">
-
+            <a href="/admin/monitoring"
+               class="{{ request()->is('admin/monitoring') ? 'active-menu' : '' }}">
                 <i class="bi bi-cpu-fill"></i>
-
                 Monitoring AI
-
-                <span class="badge bg-warning text-dark ms-auto">
-                    Soon
-                </span>
-
             </a>
-
         </li>
-
         <li>
-
-            <a href="#">
-
+            <a href="/admin/statistik"
+               class="{{ request()->is('admin/statistik') ? 'active-menu' : '' }}">
                 <i class="bi bi-bar-chart-fill"></i>
-
                 Statistik
-
             </a>
-
         </li>
-
         <li>
-
-            <a href="#">
-
+            <a href="/admin/laporan"
+               class="{{ request()->is('admin/laporan*') ? 'active-menu' : '' }}">
                 <i class="bi bi-file-earmark-text-fill"></i>
-
                 Laporan
-
             </a>
-
         </li>
 
     </ul>

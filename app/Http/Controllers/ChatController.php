@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Message;
-use Symfony\Component\Process\Process;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class ChatController extends Controller
@@ -32,28 +32,21 @@ class ChatController extends Controller
         $emotion = "Unknown";
         $confidence = 0;
 
-        // Jalankan AI Python
-        $process = new Process([
-            'C:\\Users\\Nur alya syahrani\\AppData\\Local\\Programs\\Python\\Python313\\python.exe',
-            base_path('ai/predict.py'),
-            $request->message
-        ]);
+        // Tembak Flask API
+        try {
+            $response = Http::timeout(5)->post('http://127.0.0.1:5000/predict', [
+                'text' => $request->message
+            ]);
 
-        $process->run();
-
-        if (!$process->isSuccessful()) {
-
-            // Simpan error ke laravel.log
-            Log::error($process->getErrorOutput());
-        } 
-        else {
-
-            $result = json_decode($process->getOutput(), true);
-
-            if ($result) {
+            if ($response->successful()) {
+                $result = $response->json();
                 $emotion = $result['emotion'] ?? 'Unknown';
                 $confidence = $result['confidence'] ?? 0;
+            } else {
+                Log::error("Flask API error: " . $response->body());
             }
+        } catch (\Exception $e) {
+            Log::error("Flask API connection failed: " . $e->getMessage());
         }
 
         // Simpan ke database

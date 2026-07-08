@@ -25,6 +25,10 @@ Route::get('/mood', [EmployeeController::class, 'mood']);
 // DASHBOARD
 Route::get('/dashboard', [CounselorController::class, 'dashboard']);
 Route::get('/admin/monitoring', [CounselorController::class, 'monitoring']);
+Route::get('/admin/statistik', [CounselorController::class, 'statistik']);
+Route::get('/admin/laporan', [CounselorController::class, 'laporan']);
+Route::get('/admin/laporan/export', [CounselorController::class, 'exportLaporan']);
+Route::get('/admin/laporan/export-pdf', [CounselorController::class, 'exportPdfLaporan']);
 Route::get('/employee/dashboard', [EmployeeController::class, 'dashboard']);
 
 // CHAT (FIX FINAL)

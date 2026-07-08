@@ -19,6 +19,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Vercel Serverless environment requires views to be compiled in /tmp
+        if (isset($_ENV['VERCEL']) || env('VERCEL') == 1) {
+            \Config::set('view.compiled', '/tmp');
+        }
     }
 }
