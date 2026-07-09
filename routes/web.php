@@ -21,6 +21,8 @@ Route::get('/logout', [AuthController::class, 'logout']);
 Route::get('/employee', [AuthController::class, 'employeeForm']);
 Route::post('/employee', [AuthController::class, 'employeeLogin']);
 Route::get('/mood', [EmployeeController::class, 'mood']);
+Route::post('/employee/mood', [EmployeeController::class, 'saveMood']);
+Route::get('/employee/riwayat-mood', [EmployeeController::class, 'riwayatMood']);
 
 // DASHBOARD
 Route::get('/dashboard', [CounselorController::class, 'dashboard']);

@@ -12,6 +12,7 @@ class MoodLog extends Model
     protected $fillable = [
         'anonymous_user_id',
         'mood',
+        'notes',
         'emotion_label',
         'confidence_score'
     ];

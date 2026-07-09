@@ -100,7 +100,7 @@ Mulai Chat
 
 <h5>Riwayat Mood</h5>
 
-<a href="#" class="btn btn-warning">
+<a href="/employee/riwayat-mood" class="btn btn-warning">
 Lihat
 </a>
 

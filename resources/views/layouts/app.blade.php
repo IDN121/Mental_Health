@@ -15,6 +15,11 @@
     <!-- Google Font -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
+    <!-- Turbo Drive for SPA experience -->
+    <script type="module">
+      import hotwiredTurbo from 'https://cdn.skypack.dev/@hotwired/turbo';
+    </script>
+
     <style>
         *{
             margin:0;
@@ -148,8 +153,9 @@
 
         .sidebar ul{
             flex:1;
-
             overflow-y:auto;
+            overflow-x:hidden;
+            padding-right: 5px; /* Prevent hover transform from being cut off */
         }
 
         .sidebar-logo{
