@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title','Laporan Riwayat Chat')
+@section('title','Laporan Sesi AI')
 @section('page-title','Laporan')
 
 @section('content')
@@ -13,8 +13,8 @@
     <div class="row mb-4">
         <div class="col-12 d-flex justify-content-between align-items-center">
             <div>
-                <h4 class="fw-bold mb-2">Laporan Riwayat Chat Karyawan</h4>
-                <p class="text-muted mb-0">Rekapitulasi seluruh pesan masuk beserta hasil deteksi emosi.</p>
+                <h4 class="fw-bold mb-2">Laporan Sesi Konseling (Privacy Safe)</h4>
+                <p class="text-muted mb-0">Rekapitulasi rangkuman sesi yang digenerate oleh AI.</p>
             </div>
             
             <div class="d-flex gap-2">
@@ -39,28 +39,34 @@
                         <thead class="table-light">
                             <tr>
                                 <th>#</th>
-                                <th>Tanggal & Waktu</th>
+                                <th>Tanggal Sesi</th>
                                 <th>Kode Karyawan</th>
-                                <th style="width: 40%">Pesan</th>
-                                <th>Emosi (AI)</th>
-                                <th>Confidence</th>
+                                <th>Pesan</th>
+                                <th>Risk Level</th>
+                                <th style="width: 40%">Ringkasan AI</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse($messages as $index => $msg)
+                            @forelse($sessions as $index => $ses)
                             <tr>
-                                <td class="text-muted">{{ $messages->firstItem() + $index }}</td>
-                                <td class="text-nowrap">{{ $msg->created_at->format('d/m/Y H:i') }}</td>
-                                <td class="fw-semibold text-primary">{{ $msg->anonymousUser->unique_code ?? '-' }}</td>
-                                <td>{{ $msg->message }}</td>
+                                <td class="text-muted">{{ $sessions->firstItem() + $index }}</td>
+                                <td class="text-nowrap">{{ \Carbon\Carbon::parse($ses->session_date)->format('d/m/Y') }}</td>
+                                <td class="fw-semibold text-primary">{{ $ses->anonymousUser->unique_code ?? '-' }}</td>
+                                <td><span class="badge bg-secondary">{{ $ses->message_count }}</span></td>
                                 <td>
-                                    <span class="badge bg-light text-dark border">{{ strtoupper($msg->emotion) }}</span>
+                                    @php
+                                        $badgeClass = 'bg-success';
+                                        if($ses->risk_level == 'MEDIUM') $badgeClass = 'bg-warning text-dark';
+                                        if($ses->risk_level == 'HIGH') $badgeClass = 'bg-danger';
+                                        if($ses->risk_level == 'CRITICAL') $badgeClass = 'bg-dark text-white';
+                                    @endphp
+                                    <span class="badge {{ $badgeClass }}">{{ $ses->risk_level }}</span>
                                 </td>
-                                <td>{{ $msg->confidence }}%</td>
+                                <td>{{ Str::limit($ses->summary, 80) }}</td>
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="6" class="text-center py-4 text-muted">Belum ada riwayat pesan dari karyawan.</td>
+                                <td colspan="6" class="text-center py-4 text-muted">Belum ada riwayat sesi.</td>
                             </tr>
                             @endforelse
                         </tbody>
@@ -68,7 +74,7 @@
                 </div>
 
                 <div class="d-flex justify-content-center mt-3">
-                    {{ $messages->links('pagination::bootstrap-5') }}
+                    {{ $sessions->links('pagination::bootstrap-5') }}
                 </div>
             </div>
         </div>

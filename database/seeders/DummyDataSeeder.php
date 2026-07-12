@@ -19,7 +19,7 @@ class DummyDataSeeder extends Seeder
         // Buat 10 Karyawan (Anonymous User)
         for ($i = 1; $i <= 10; $i++) {
             $user = AnonymousUser::create([
-                'unique_code' => strtoupper(Str::random(4)),
+                'unique_code' => sprintf('%04d', rand(0, 9999)),
                 'created_at' => now()->subDays(rand(1, 14)),
                 'updated_at' => now(),
             ]);

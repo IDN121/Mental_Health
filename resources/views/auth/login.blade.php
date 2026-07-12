@@ -59,21 +59,21 @@ Login Admin
 
 <div class="mb-3">
 
-<label>Email</label>
+<label>Username</label>
 
 <div class="input-group">
 
 <span class="input-group-text">
 
-<i class="bi bi-envelope-fill"></i>
+<i class="bi bi-person-fill"></i>
 
 </span>
 
 <input
-type="email"
+type="text"
 name="email"
 class="form-control"
-placeholder="Masukkan Email"
+placeholder="Masukkan Username"
 required>
 
 </div>

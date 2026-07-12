@@ -11,14 +11,22 @@ class MoodLog extends Model
 
     protected $fillable = [
         'anonymous_user_id',
+        'message_id',
         'mood',
         'notes',
         'emotion_label',
-        'confidence_score'
+        'confidence_score',
+        'source',
+        'mood_date'
     ];
 
     public function user()
     {
         return $this->belongsTo(AnonymousUser::class,'anonymous_user_id');
+    }
+
+    public function message()
+    {
+        return $this->belongsTo(Message::class, 'message_id');
     }
 }

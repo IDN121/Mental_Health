@@ -15,7 +15,8 @@ class Message extends Model
         'message',
         'emotion',
         'confidence',
-        'is_read'
+        'is_read',
+        'status'
     ];
 
     protected $casts = [

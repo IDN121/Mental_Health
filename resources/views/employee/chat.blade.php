@@ -4,18 +4,24 @@
 
 @push('styles')
 <style>
-    /* Adjust main-content specifically for chat to fit screen */
-    .chat-container-wrapper {
-        height: calc(100vh - 60px); /* 100vh minus some padding from main-content */
+    .main-content {
+        padding: 0 !important;
         display: flex;
         flex-direction: column;
+        height: 100vh;
+    }
+    .chat-container-wrapper {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        padding: 20px;
     }
     
     .chat-card {
         display: flex;
         flex-direction: column;
         flex-grow: 1;
-        overflow: hidden; /* Keep header and footer in place */
+        overflow: hidden; 
         border-radius: 20px;
     }
 
@@ -70,12 +76,11 @@
         color: white;
     }
 
-    .emotion-happy { background-color: #10B981; } /* Hijau */
-    .emotion-stress { background-color: #F59E0B; color: #fff; } /* Oranye */
-    .emotion-sad { background-color: #64748b; } /* Abu-biru */
-    .emotion-angry { background-color: #EF4444; } /* Merah */
-    .emotion-anxious { background-color: #8B5CF6; } /* Ungu */
-    .emotion-default { background-color: #0ea5e9; } /* Biru default */
+    .emotion-bahagia, .emotion-senang { background-color: #10B981; } /* Hijau */
+    .emotion-stress, .emotion-cemas { background-color: #F59E0B; color: #fff; } /* Oranye */
+    .emotion-sedih { background-color: #64748b; } /* Abu-biru */
+    .emotion-marah { background-color: #EF4444; } /* Merah */
+    .emotion-netral { background-color: #0ea5e9; } /* Biru default */
 
     /* Scrollbar for chat box */
     .chat-box::-webkit-scrollbar {
@@ -85,17 +90,35 @@
         background: #cbd5e1;
         border-radius: 10px;
     }
+
+    .typing-indicator {
+        font-style: italic;
+        color: #64748b;
+        font-size: 13px;
+        margin-top: 5px;
+        display: none;
+        padding: 10px 15px;
+        background: #f1f5f9;
+        border-radius: 15px;
+        width: fit-content;
+        animation: pulse 1.5s infinite;
+    }
+    
+    @keyframes pulse {
+        0% { opacity: 0.6; }
+        50% { opacity: 1; }
+        100% { opacity: 0.6; }
+    }
 </style>
 @endphp
 @php
     function getEmotionClass($emotion) {
         $e = strtolower($emotion);
-        if (in_array($e, ['happy', 'senang'])) return 'emotion-happy';
-        if (in_array($e, ['stress', 'stres'])) return 'emotion-stress';
-        if (in_array($e, ['sad', 'sedih'])) return 'emotion-sad';
-        if (in_array($e, ['angry', 'marah'])) return 'emotion-angry';
-        if (in_array($e, ['anxious', 'cemas', 'takut'])) return 'emotion-anxious';
-        return 'emotion-default';
+        if (in_array($e, ['bahagia', 'senang'])) return 'emotion-bahagia';
+        if (in_array($e, ['stress', 'stres', 'cemas', 'takut'])) return 'emotion-cemas';
+        if (in_array($e, ['sad', 'sedih'])) return 'emotion-sedih';
+        if (in_array($e, ['angry', 'marah'])) return 'emotion-marah';
+        return 'emotion-netral';
     }
 @endphp
 @endpush
@@ -104,15 +127,16 @@
 @include('components.sidebar')
 
 <div class="main-content">
-    <!-- Navbar is hidden in chat to save space, or kept minimal -->
     <div class="chat-container-wrapper">
+
+        <!-- CHAT INTERFACE -->
         <div class="card card-modern shadow-sm border-0 chat-card">
             
             {{-- HEADER --}}
             <div class="card-header bg-white d-flex justify-content-between align-items-center chat-header p-3">
                 <div class="d-flex align-items-center">
                     <img src="https://ui-avatars.com/api/?name=Konselor+AI&background=2563EB&color=fff"
-                        class="rounded-circle me-3" width="45">
+                        class="rounded-circle me-3" width="45" alt="AI Avatar">
                     <div>
                         <h5 class="mb-0 fw-bold">Konselor AI</h5>
                         <small class="text-success fw-medium">
@@ -132,12 +156,7 @@
                         <!-- USER MESSAGE (RIGHT) -->
                         <div class="d-flex justify-content-end mb-3">
                             <div class="bubble bubble-user">
-                                @if($chat->emotion)
-                                    <span class="emotion-badge {{ getEmotionClass($chat->emotion) }}">
-                                        {{ ucfirst($chat->emotion) }}
-                                    </span>
-                                @endif
-                                <div class="text-dark">{{ $chat->message }}</div>
+                                <div class="text-dark" style="white-space: pre-wrap;">{{ $chat->message }}</div>
                                 <div class="text-end mt-1">
                                     <small class="text-muted" style="font-size: 11px;">
                                         {{ $chat->created_at->timezone('Asia/Jakarta')->format('H:i') }}
@@ -155,7 +174,7 @@
                         <div class="d-flex justify-content-start mb-3">
                             <div class="bubble bubble-bot">
                                 <div class="fw-bold text-primary mb-1" style="font-size:12px;">Konselor AI</div>
-                                <div class="text-dark">{{ $chat->message }}</div>
+                                <div class="text-dark" style="white-space: pre-wrap;">{{ $chat->message }}</div>
                                 <div class="text-end mt-1">
                                     <small class="text-muted" style="font-size: 11px;">
                                         {{ $chat->created_at->timezone('Asia/Jakarta')->format('H:i') }}
@@ -165,19 +184,37 @@
                         </div>
                     @endif
                 @empty
-                    <div class="d-flex flex-column align-items-center justify-content-center h-100 text-muted">
-                        <div class="bg-light rounded-circle d-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
-                            <i class="bi bi-chat-dots fs-1 text-primary"></i>
+                    <div class="d-flex flex-column align-items-center justify-content-center h-100 text-dark">
+                        <div class="card border-0 shadow-sm p-4" style="max-width: 450px; background: #ffffff; border-radius: 15px;">
+                            <h4 class="fw-bold text-center text-primary mb-3">👋 Selamat Datang di Ruang Konseling</h4>
+                            <p class="text-center text-muted mb-4">Ruang aman untuk berkeluh kesah tanpa menghakimi.</p>
+                            
+                            <p class="fw-medium mb-2">Kamu dapat bercerita mengenai:</p>
+                            <ul class="text-muted mb-4" style="line-height: 1.8;">
+                                <li>Pekerjaan & Karir</li>
+                                <li>Tekanan Kerja (Burnout)</li>
+                                <li>Hubungan dengan rekan kerja / atasan</li>
+                                <li>Keluarga & Percintaan</li>
+                                <li>Kecemasan (Anxiety)</li>
+                                <li>Stres berlebihan</li>
+                                <li>Atau hal lain yang sedang mengganggu pikiranmu</li>
+                            </ul>
+                            
+                            <div class="text-center fw-bold text-primary bg-light p-2 rounded">
+                                Aku siap mendengarkan.
+                            </div>
                         </div>
-                        <h5 class="fw-semibold">Mulai Percakapan</h5>
-                        <p class="text-center" style="max-width: 300px;">Ceritakan apa yang kamu rasakan hari ini. Kami siap mendengarkan.</p>
                     </div>
                 @endforelse
+
+                <div id="typingIndicator" class="typing-indicator">
+                    Konselor sedang mengetik...
+                </div>
             </div>
 
             {{-- INPUT FOOTER --}}
             <div class="chat-footer">
-                <form action="/chat/send" method="POST">
+                <form action="/chat/send" method="POST" id="chatForm">
                     @csrf
                     <div class="d-flex align-items-center bg-light p-2 rounded-pill border">
                         <input
@@ -187,14 +224,15 @@
                             placeholder="Tulis balasan..."
                             autocomplete="off"
                             id="chatInput"
+                            minlength="1"
+                            maxlength="3000"
                             required>
 
                         <button
                             type="submit"
                             id="btnSend"
                             class="btn btn-primary rounded-circle ms-2 d-flex justify-content-center align-items-center"
-                            style="width:45px;height:45px; flex-shrink: 0;"
-                            onclick="showLoading()">
+                            style="width:45px;height:45px; flex-shrink: 0;">
                             
                             <i class="bi bi-send-fill" id="sendIcon"></i>
                             <div class="spinner-border spinner-border-sm d-none" id="sendLoader" role="status"></div>
@@ -202,23 +240,41 @@
                     </div>
                 </form>
             </div>
-
         </div>
+
     </div>
 </div>
 
 @push('scripts')
 <script>
     const chatBox = document.getElementById('chatBox');
+    const chatForm = document.getElementById('chatForm');
+    const chatInput = document.getElementById('chatInput');
+    const btnSend = document.getElementById('btnSend');
+    const sendIcon = document.getElementById('sendIcon');
+    const sendLoader = document.getElementById('sendLoader');
+    const typingIndicator = document.getElementById('typingIndicator');
 
-    function showLoading() {
-        const input = document.getElementById('chatInput');
-        if (input.value.trim() !== '') {
-            document.getElementById('sendIcon').classList.add('d-none');
-            document.getElementById('sendLoader').classList.remove('d-none');
-            document.getElementById('btnSend').disabled = true;
-            document.getElementById('btnSend').form.submit();
-        }
+    if(chatForm) {
+        chatForm.addEventListener('submit', function(e) {
+            if(chatInput.value.trim() === '') {
+                e.preventDefault();
+                return;
+            }
+
+            // Disable button and show loading
+            btnSend.disabled = true;
+            chatInput.readOnly = true;
+            sendIcon.classList.add('d-none');
+            sendLoader.classList.remove('d-none');
+            
+            // Show typing indicator
+            if(typingIndicator) {
+                typingIndicator.style.display = 'block';
+                chatBox.appendChild(typingIndicator); // move to bottom
+                scrollBottom();
+            }
+        });
     }
 
     function scrollBottom() {
@@ -230,64 +286,80 @@
     function getEmotionClassJs(emotion) {
         if (!emotion) return 'emotion-default';
         const e = emotion.toLowerCase();
-        if (['happy', 'senang'].includes(e)) return 'emotion-happy';
-        if (['stress', 'stres'].includes(e)) return 'emotion-stress';
-        if (['sad', 'sedih'].includes(e)) return 'emotion-sad';
-        if (['angry', 'marah'].includes(e)) return 'emotion-angry';
-        if (['anxious', 'cemas', 'takut'].includes(e)) return 'emotion-anxious';
-        return 'emotion-default';
+        if (['happy', 'senang', 'bahagia'].includes(e)) return 'emotion-bahagia';
+        if (['stress', 'stres', 'cemas', 'takut'].includes(e)) return 'emotion-cemas';
+        if (['sad', 'sedih'].includes(e)) return 'emotion-sedih';
+        if (['angry', 'marah'].includes(e)) return 'emotion-marah';
+        return 'emotion-netral';
+    }
+
+    function escapeHtml(unsafe) {
+        return (unsafe || '').toString()
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
     }
 
     scrollBottom();
 
     // Polling new messages
-    setInterval(function(){
-        fetch('/chat/messages/' + chatBox.dataset.user)
-        .then(res => res.json())
-        .then(data => {
-            let html = '';
-            
-            if(data.length === 0) return; // if empty don't override the empty state with nothing
-            
-            data.forEach(chat => {
-                if(chat.sender == "employee"){
-                    let emotionBadge = chat.emotion ? `<span class="emotion-badge ${getEmotionClassJs(chat.emotion)}">${chat.emotion.charAt(0).toUpperCase() + chat.emotion.slice(1)}</span>` : '';
-                    let checkIcon = chat.is_read ? '<i class="bi bi-check-all text-primary ms-1"></i>' : '<i class="bi bi-check ms-1"></i>';
-                    html += `
-                    <div class="d-flex justify-content-end mb-3">
-                        <div class="bubble bubble-user">
-                            ${emotionBadge}
-                            <div class="text-dark">${chat.message}</div>
-                            <div class="text-end mt-1">
-                                <small class="text-muted" style="font-size: 11px;">
-                                    ${chat.created_at.substring(11,16)} ${checkIcon}
-                                </small>
+    if (chatBox) {
+        setInterval(function(){
+            // Do not poll if currently sending to avoid UI jumps
+            if(btnSend && btnSend.disabled) return;
+
+            fetch('/chat/messages/' + chatBox.dataset.user)
+            .then(res => res.json())
+            .then(data => {
+                if(data.length === 0) return;
+                
+                let html = '';
+                data.forEach(chat => {
+                    if(chat.sender == "employee"){
+                        let checkIcon = chat.is_read ? '<i class="bi bi-check-all text-primary ms-1"></i>' : '<i class="bi bi-check ms-1"></i>';
+                        html += `
+                        <div class="d-flex justify-content-end mb-3">
+                            <div class="bubble bubble-user">
+                                <div class="text-dark" style="white-space: pre-wrap;">${escapeHtml(chat.message)}</div>
+                                <div class="text-end mt-1">
+                                    <small class="text-muted" style="font-size: 11px;">
+                                        ${chat.created_at.substring(11,16)} ${checkIcon}
+                                    </small>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    `;
-                }else{
-                    html += `
-                    <div class="d-flex justify-content-start mb-3">
-                        <div class="bubble bubble-bot">
-                            <div class="fw-bold text-primary mb-1" style="font-size:12px;">Konselor AI</div>
-                            <div class="text-dark">${chat.message}</div>
-                            <div class="text-end mt-1">
-                                <small class="text-muted" style="font-size: 11px;">
-                                    ${chat.created_at.substring(11,16)}
-                                </small>
+                        `;
+                    }else{
+                        html += `
+                        <div class="d-flex justify-content-start mb-3">
+                            <div class="bubble bubble-bot">
+                                <div class="fw-bold text-primary mb-1" style="font-size:12px;">Konselor AI</div>
+                                <div class="text-dark" style="white-space: pre-wrap;">${escapeHtml(chat.message)}</div>
+                                <div class="text-end mt-1">
+                                    <small class="text-muted" style="font-size: 11px;">
+                                        ${chat.created_at.substring(11,16)}
+                                    </small>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    `;
+                        `;
+                    }
+                });
+
+                // Preserve typing indicator in HTML
+                html += `<div id="typingIndicator" class="typing-indicator" style="display: none;">Konselor sedang mengetik...</div>`;
+                
+                // Only update if content changed (naive check by length to avoid jitter)
+                if (chatBox.innerHTML.length !== html.length) {
+                    chatBox.innerHTML = html;
+                    scrollBottom();
                 }
-            });
-            chatBox.innerHTML = html;
-            // Only scroll if we are near the bottom to avoid annoyance when user is scrolling up?
-            // For now just scroll bottom
-            scrollBottom();
-        });
-    }, 3000);
+            })
+            .catch(err => console.error("Polling error:", err));
+        }, 3000);
+    }
 </script>
 @endpush
 

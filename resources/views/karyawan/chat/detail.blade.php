@@ -4,10 +4,17 @@
 
 @push('styles')
 <style>
-    .chat-container-wrapper {
-        height: calc(100vh - 60px);
+    .main-content {
+        padding: 0 !important;
         display: flex;
         flex-direction: column;
+        height: 100vh;
+    }
+    .chat-container-wrapper {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        padding: 20px;
     }
     
     .chat-card {
@@ -115,11 +122,24 @@
                         </small>
                     </div>
                 </div>
-                <div>
+                <div class="d-flex align-items-center">
+                    <form action="/karyawan/chat/{{ $user->id }}/status" method="POST" class="me-3">
+                        @csrf
+                        <div class="input-group input-group-sm">
+                            <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
+                                @php
+                                    $currentStatus = $messages->last() ? $messages->last()->status : 'baru';
+                                @endphp
+                                <option value="baru" {{ $currentStatus == 'baru' ? 'selected' : '' }}>Baru</option>
+                                <option value="diproses" {{ $currentStatus == 'diproses' ? 'selected' : '' }}>Diproses</option>
+                                <option value="selesai" {{ $currentStatus == 'selesai' ? 'selected' : '' }}>Selesai</option>
+                            </select>
+                        </div>
+                    </form>
                     <button class="btn btn-outline-primary btn-sm rounded-pill px-3 me-2">
                         <i class="bi bi-person-lines-fill me-1"></i> Detail
                     </button>
-                    <a href="/admin/chat" class="btn btn-light btn-sm text-muted rounded-pill px-3">
+                    <a href="/karyawan/chat" class="btn btn-light btn-sm text-muted rounded-pill px-3">
                         <i class="bi bi-arrow-left me-1"></i> Kembali
                     </a>
                 </div>
@@ -178,7 +198,7 @@
 
             {{-- INPUT FOOTER --}}
             <div class="chat-footer">
-                <form action="/admin/chat/{{ $user->id }}" method="POST">
+                <form action="/karyawan/chat/{{ $user->id }}" method="POST">
                     @csrf
                     <div class="d-flex align-items-center bg-light p-2 rounded-pill border">
                         <input
@@ -242,7 +262,7 @@
     scrollBottom();
 
     setInterval(function(){
-        fetch('/admin/chat/messages/' + chatBox.dataset.user)
+        fetch('/karyawan/chat/messages/' + chatBox.dataset.user)
         .then(res => res.json())
         .then(data => {
             let html = '';

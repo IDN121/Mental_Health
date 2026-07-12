@@ -5,53 +5,67 @@ namespace App\Http\Controllers;
 use App\Models\AnonymousUser;
 use App\Models\Message;
 use App\Models\MoodLog;
+use App\Models\ChatSession;
 use Illuminate\Http\Request;
 
 class CounselorController extends Controller
 {
-    public function dashboard()
+    public function adminDashboard()
     {
-        if (!session()->has('admin_id')) {
-            return redirect('/login');
-        }
-
         $employeeCount = AnonymousUser::count();
-        $chatCount = Message::count();
+        $chatCount = Message::count(); // Total keseluruhan pesan (hanya angka)
         $moodCount = MoodLog::whereDate('created_at', today())->count();
 
-        $latestMessages = Message::latest()->take(5)->get();
+        // ⚠ Peringatan Risiko Tinggi
+        $highRiskCount = ChatSession::whereDate('session_date', today())
+            ->whereIn('risk_level', ['HIGH', 'CRITICAL'])
+            ->count();
 
-        return view('counselor.dashboard', compact(
+        // Admin hanya boleh melihat sesi, bukan pesan mentah
+        $recentSessions = ChatSession::with('anonymousUser')
+            ->orderBy('updated_at', 'desc')
+            ->take(5)
+            ->get();
+
+        return view('admin.dashboard', compact(
             'employeeCount',
             'chatCount',
             'moodCount',
-            'latestMessages'
+            'highRiskCount',
+            'recentSessions'
         ));
+    }
+
+    public function karyawanDashboard()
+    {
+        // Untuk Karyawan, tampilkan pesan yang baru atau diproses
+        $activeChats = Message::whereIn('status', ['baru', 'diproses'])
+            ->with('anonymousUser')
+            ->orderBy('created_at', 'desc')
+            ->take(10)
+            ->get();
+            
+        $chatCount = Message::where('status', 'baru')->count();
+
+        return view('karyawan.dashboard', compact('activeChats', 'chatCount'));
     }
 
     public function monitoring(Request $request)
     {
-        if (!session()->has('admin_id')) {
-            return redirect('/login');
+        // Admin TIDAK BOLEH membaca pesan mentah. Gunakan ChatSession.
+        $query = ChatSession::with('anonymousUser');
+
+        if ($request->has('risk') && $request->risk != '') {
+            $query->where('risk_level', $request->risk);
         }
 
-        $query = Message::with('anonymousUser')->where('sender', 'employee');
+        $sessions = $query->orderBy('updated_at', 'desc')->paginate(15);
 
-        if ($request->has('emotion') && $request->emotion != '') {
-            $query->where('emotion', $request->emotion);
-        }
-
-        $messages = $query->orderBy('created_at', 'desc')->paginate(15);
-
-        return view('counselor.monitoring', compact('messages'));
+        return view('counselor.monitoring', compact('sessions'));
     }
 
     public function statistik()
     {
-        if (!session()->has('admin_id')) {
-            return redirect('/login');
-        }
-
         // Get mood data grouped by mood type for Doughnut chart
         $moodDistribution = MoodLog::selectRaw('mood, COUNT(*) as count')
             ->groupBy('mood')
@@ -92,45 +106,36 @@ class CounselorController extends Controller
 
     public function laporan()
     {
-        if (!session()->has('admin_id')) {
-            return redirect('/login');
-        }
-
-        $messages = Message::with('anonymousUser')
-            ->where('sender', 'employee')
-            ->orderBy('created_at', 'desc')
+        $sessions = ChatSession::with('anonymousUser')
+            ->orderBy('session_date', 'desc')
             ->paginate(20);
 
-        return view('counselor.laporan', compact('messages'));
+        return view('counselor.laporan', compact('sessions'));
     }
 
     public function exportLaporan()
     {
-        if (!session()->has('admin_id')) {
-            return redirect('/login');
-        }
-
-        $messages = Message::with('anonymousUser')
-            ->where('sender', 'employee')
-            ->orderBy('created_at', 'desc')
+        $sessions = ChatSession::with('anonymousUser')
+            ->orderBy('session_date', 'desc')
             ->get();
 
-        $filename = "laporan_monitoring_ai_" . date('Ymd_His') . ".csv";
+        $filename = "laporan_sesi_ai_" . date('Ymd_His') . ".csv";
         $handle = fopen('php://temp', 'w+');
         
         // Add UTF-8 BOM for Excel compatibility
         fputs($handle, "\xEF\xBB\xBF");
         
-        // Headers
-        fputcsv($handle, ['Tanggal', 'Kode Karyawan', 'Pesan', 'Emosi (AI)', 'Confidence (%)']);
+        // Headers (NO RAW MESSAGES ALLOWED)
+        fputcsv($handle, ['Tanggal', 'Kode Karyawan', 'Jumlah Pesan', 'Mood Dominan', 'Risk Level', 'Summary']);
 
-        foreach ($messages as $msg) {
+        foreach ($sessions as $ses) {
             fputcsv($handle, [
-                $msg->created_at->format('Y-m-d H:i:s'),
-                $msg->anonymousUser->unique_code ?? 'N/A',
-                $msg->message,
-                strtoupper($msg->emotion),
-                $msg->confidence
+                $ses->session_date,
+                $ses->anonymousUser->unique_code ?? 'N/A',
+                $ses->message_count,
+                strtoupper($ses->dominant_mood ?? '-'),
+                $ses->risk_level,
+                $ses->summary
             ]);
         }
 
@@ -145,16 +150,11 @@ class CounselorController extends Controller
 
     public function exportPdfLaporan()
     {
-        if (!session()->has('admin_id')) {
-            return redirect('/login');
-        }
-
-        $messages = Message::with('anonymousUser')
-            ->where('sender', 'employee')
-            ->orderBy('created_at', 'desc')
+        $sessions = ChatSession::with('anonymousUser')
+            ->orderBy('session_date', 'desc')
             ->get();
 
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('counselor.pdf_laporan', compact('messages'));
-        return $pdf->download('laporan_monitoring_ai_' . date('Ymd_His') . '.pdf');
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('counselor.pdf_laporan', compact('sessions'));
+        return $pdf->download('laporan_sesi_ai_' . date('Ymd_His') . '.pdf');
     }
 }

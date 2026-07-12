@@ -44,13 +44,19 @@ Login Karyawan
 </h3>
 
 @if(session('error'))
-
 <div class="alert alert-danger">
-
 {{ session('error') }}
-
 </div>
+@endif
 
+@if($errors->any())
+<div class="alert alert-danger">
+<ul class="mb-0">
+@foreach($errors->all() as $error)
+<li>{{ $error }}</li>
+@endforeach
+</ul>
+</div>
 @endif
 
 <form method="POST" action="/employee">
@@ -73,7 +79,10 @@ Login Karyawan
 type="text"
 name="unique_code"
 class="form-control"
-placeholder="Masukkan Kode"
+placeholder="Masukkan Kode (4 angka)"
+maxlength="4"
+minlength="4"
+pattern="\d{4}"
 required>
 
 </div>

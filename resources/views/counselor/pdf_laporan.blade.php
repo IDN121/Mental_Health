@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Laporan Monitoring AI</title>
+    <title>Laporan Monitoring Sesi AI</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -62,7 +62,7 @@
 <body>
 
     <div class="header">
-        <h2>Laporan Monitoring Emosi Karyawan (AI)</h2>
+        <h2>Laporan Sesi Konseling (Privacy Safe)</h2>
         <p>Mental Health Monitoring System - Dicetak pada: {{ date('d F Y H:i') }}</p>
     </div>
 
@@ -72,22 +72,20 @@
                 <th style="width: 5%">No</th>
                 <th style="width: 15%">Tanggal</th>
                 <th style="width: 15%">Karyawan</th>
-                <th style="width: 45%">Pesan Chat</th>
-                <th style="width: 10%">Emosi</th>
-                <th style="width: 10%">Conf.</th>
+                <th style="width: 10%">Pesan</th>
+                <th style="width: 15%">Risk Level</th>
+                <th style="width: 40%">Ringkasan AI</th>
             </tr>
         </thead>
         <tbody>
-            @forelse($messages as $index => $msg)
+            @forelse($sessions as $index => $ses)
             <tr>
                 <td class="text-center">{{ $index + 1 }}</td>
-                <td>{{ $msg->created_at->format('d/m/Y H:i') }}</td>
-                <td>{{ $msg->anonymousUser->unique_code ?? '-' }}</td>
-                <td>{{ $msg->message }}</td>
-                <td class="text-center">
-                    {{ strtoupper($msg->emotion) }}
-                </td>
-                <td class="text-center">{{ $msg->confidence }}%</td>
+                <td>{{ \Carbon\Carbon::parse($ses->session_date)->format('d/m/Y') }}</td>
+                <td>{{ $ses->anonymousUser->unique_code ?? '-' }}</td>
+                <td class="text-center">{{ $ses->message_count }}</td>
+                <td class="text-center">{{ $ses->risk_level }}</td>
+                <td>{{ $ses->summary }}</td>
             </tr>
             @empty
             <tr>
@@ -98,7 +96,7 @@
     </table>
 
     <div class="footer">
-        Dokumen ini digenerate secara otomatis oleh sistem.
+        Dokumen ini digenerate secara otomatis oleh sistem (AI Summary Only).
     </div>
 
 </body>

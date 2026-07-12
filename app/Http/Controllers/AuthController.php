@@ -24,10 +24,14 @@ class AuthController extends Controller
 
         if ($admin && Hash::check($request->password, $admin->password)) {
             Session::put('admin_id', $admin->id);
-            return redirect('/dashboard');
+            if ($admin->role === 'admin') {
+                return redirect('/admin/dashboard');
+            } else {
+                return redirect('/karyawan/dashboard');
+            }
         }
 
-        return back()->with('error', 'Email atau Password salah');
+        return back()->with('error', 'Username atau Password salah');
     }
 
     // =========================
@@ -49,6 +53,13 @@ class AuthController extends Controller
 
     public function employeeLogin(Request $request)
     {
+        $request->validate([
+            'unique_code' => 'required|digits:4',
+        ], [
+            'unique_code.required' => 'Kode unik wajib diisi',
+            'unique_code.digits' => 'Kode unik harus berupa 4 angka',
+        ]);
+
         // ambil user berdasarkan kode unik
         $user = AnonymousUser::where('unique_code', $request->unique_code)->first();
 

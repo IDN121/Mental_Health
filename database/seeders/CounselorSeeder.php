@@ -12,9 +12,34 @@ class CounselorSeeder extends Seeder
     {
         DB::table('counselors')->insert([
             [
-                'name' => 'Admin Konselor',
+                'name' => 'Administrator',
+                'email' => 'admin',
+                'password' => Hash::make('admistrator'),
+                'role' => 'admin',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => 'Super Administrator',
+                'email' => 'superadmin',
+                'password' => Hash::make('admistrator'),
+                'role' => 'admin',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => 'Admin Google',
                 'email' => 'admin@gmail.com',
-                'password' => Hash::make('123456'),
+                'password' => Hash::make('admistrator'),
+                'role' => 'admin',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => 'Karyawan Konseling',
+                'email' => 'karyawan@mentalhealth.test',
+                'password' => Hash::make('Karyawan12345'),
+                'role' => 'karyawan',
                 'created_at' => now(),
                 'updated_at' => now(),
             ]
